@@ -1,28 +1,29 @@
 import AppError from "@shared/errors/AppError";
-import FakeUsersRepository from "../repositories/fakes/FakeUsersRepository";
-import FakeUserTokensRepository from "../repositories/fakes/FakeUserTokensRepository";
+
+import FakeUsersRepository from "@modules/users/repositories/fakes/FakeUsersRepository";
+import FakeUserTokensRepository from "@modules/users/repositories/fakes/FakeUserTokensRepository";
 import FakeMailProvider from "@shared/container/providers/MailProvider/fakes/FakeMailProvider";
 import SendForgotPasswordEmailService from "./SendForgotPasswordEmailService";
 
 let fakeUsersRepository: FakeUsersRepository;
 let fakeMailProvider: FakeMailProvider;
-let fakeUsersTokenRepository: FakeUserTokensRepository;
+let fakeUserTokensRepository: FakeUserTokensRepository;
 let sendForgotPasswordEmail: SendForgotPasswordEmailService;
 
-describe("SendForgotPasswordEmailService", () => {
+describe("SendForgotPasswordEmail", () => {
   beforeEach(() => {
     fakeUsersRepository = new FakeUsersRepository();
     fakeMailProvider = new FakeMailProvider();
-    fakeUsersTokenRepository = new FakeUserTokensRepository();
+    fakeUserTokensRepository = new FakeUserTokensRepository();
 
     sendForgotPasswordEmail = new SendForgotPasswordEmailService(
       fakeUsersRepository,
       fakeMailProvider,
-      fakeUsersTokenRepository
+      fakeUserTokensRepository
     );
   });
 
-  it("should be able to recover the password using the e-mail", async () => {
+  it("should be able to recover the password using the email", async () => {
     const sendMail = jest.spyOn(fakeMailProvider, "sendMail");
 
     await fakeUsersRepository.create({
@@ -47,7 +48,7 @@ describe("SendForgotPasswordEmailService", () => {
   });
 
   it("should generate a forgot password token", async () => {
-    const generateToken = jest.spyOn(fakeUsersTokenRepository, "generate");
+    const generateToken = jest.spyOn(fakeUserTokensRepository, "generate");
 
     const user = await fakeUsersRepository.create({
       name: "John Doe",

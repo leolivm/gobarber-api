@@ -1,13 +1,15 @@
 import AppError from "@shared/errors/AppError";
-import FakeUsersRepository from "../repositories/fakes/FakeUsersRepository";
-import ShowProfileService from "../services/ShowProfileService";
+
+import FakeUsersRepository from "@modules/users/repositories/fakes/FakeUsersRepository";
+import ShowProfileService from "./ShowProfileService";
 
 let fakeUsersRepository: FakeUsersRepository;
 let showProfile: ShowProfileService;
 
-describe("UpdateProfile", () => {
+describe("ShowProfile", () => {
   beforeEach(() => {
     fakeUsersRepository = new FakeUsersRepository();
+
     showProfile = new ShowProfileService(fakeUsersRepository);
   });
 
@@ -26,7 +28,7 @@ describe("UpdateProfile", () => {
     expect(profile.email).toBe("johndoe@example.com");
   });
 
-  it("should be not able to show the profile from non-existing user", async () => {
+  it("should not be able to show the profile from non-existing user", async () => {
     await expect(
       showProfile.execute({
         user_id: "non-existing-user-id",

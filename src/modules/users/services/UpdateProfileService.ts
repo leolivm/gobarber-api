@@ -1,10 +1,13 @@
 import { injectable, inject } from "tsyringe";
-import IUsersRepository from "../repositories/IUsersRepository";
-import IHashProvider from "../providers/HashProvider/models/IHashProvider";
+
 import AppError from "@shared/errors/AppError";
+
+import IUsersRepository from "@modules/users/repositories/IUsersRepository";
+import IHashProvider from "@modules/users/providers/HashProvider/models/IHashProvider";
+
 import User from "@modules/users/infra/typeorm/entities/User";
 
-interface Request {
+interface IRequest {
   user_id: string;
   name: string;
   email: string;
@@ -15,8 +18,11 @@ interface Request {
 @injectable()
 class UpdateProfileService {
   constructor(
-    @inject("UsersRepository") private usersRepository: IUsersRepository,
-    @inject("HashProvider") private hashProvider: IHashProvider
+    @inject("UsersRepository")
+    private usersRepository: IUsersRepository,
+
+    @inject("HashProvider")
+    private hashProvider: IHashProvider
   ) {}
 
   public async execute({
@@ -25,22 +31,24 @@ class UpdateProfileService {
     email,
     password,
     old_password,
-  }: Request): Promise<User> {
+  }: IRequest): Promise<User> {
     const user = await this.usersRepository.findById(user_id);
 
     if (!user) {
-      throw new AppError("User not found.");
+      throw new AppError("User not found");
     }
 
-    const emailExists = await this.usersRepository.findByEmail(email);
+    const userWithUpdatedEmail = await this.usersRepository.findByEmail(email);
 
-    if (emailExists && emailExists.id !== user_id) {
-      throw new AppError("E-mail already exists.");
+    if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user_id) {
+      throw new AppError("E-mail already in use");
     }
+
+    Object.assign(user, { name, email });
 
     if (password && !old_password) {
       throw new AppError(
-        "You need to inform old password to set a new password."
+        "You need to inform the old password to set a new password"
       );
     }
 
@@ -51,14 +59,11 @@ class UpdateProfileService {
       );
 
       if (!checkOldPassword) {
-        throw new AppError("Old password does not match.");
+        throw new AppError("Old password does not match");
       }
 
       user.password = await this.hashProvider.generateHash(password);
     }
-
-    user.name = name;
-    user.email = email;
 
     return this.usersRepository.save(user);
   }

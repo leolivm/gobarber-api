@@ -1,13 +1,13 @@
-import "reflect-metadata";
 import { injectable, inject } from "tsyringe";
 import { getHours, isAfter } from "date-fns";
-import IAppointmentsRepository from "../repositories/IAppointmentsRepository";
+
+import IAppointmentsRepository from "@modules/appointments/repositories/IAppointmentsRepository";
 
 interface IRequest {
   provider_id: string;
-  day: number;
   month: number;
   year: number;
+  day: number;
 }
 
 type IResponse = Array<{
@@ -16,24 +16,24 @@ type IResponse = Array<{
 }>;
 
 @injectable()
-export default class ListProvideDayAvailabilityService {
+class ListProviderDayAvailabilityService {
   constructor(
     @inject("AppointmentsRepository")
-    private appoimentsRepository: IAppointmentsRepository
+    private appointmentsRepository: IAppointmentsRepository
   ) {}
 
   public async execute({
+    provider_id,
     day,
     month,
     year,
-    provider_id,
   }: IRequest): Promise<IResponse> {
-    const appointments = await this.appoimentsRepository.findAllInDayFromProvider(
+    const appointments = await this.appointmentsRepository.findAllInDayFromProvider(
       {
         provider_id,
-        year,
-        month,
         day,
+        month,
+        year,
       }
     );
 
@@ -61,3 +61,5 @@ export default class ListProvideDayAvailabilityService {
     return availability;
   }
 }
+
+export default ListProviderDayAvailabilityService;

@@ -1,9 +1,12 @@
 import { injectable, inject } from "tsyringe";
 import { isAfter, addHours } from "date-fns";
+
 import AppError from "@shared/errors/AppError";
 import IUsersRepository from "@modules/users/repositories/IUsersRepository";
-import IUserTokenRepository from "@modules/users/repositories/IUserTokenRepository";
+import IUserTokensRepository from "@modules/users/repositories/IUserTokenRepository";
 import IHashProvider from "@modules/users/providers/HashProvider/models/IHashProvider";
+
+// import User from '@modules/users/infra/typeorm/entities/User';
 
 interface IRequest {
   password: string;
@@ -16,31 +19,31 @@ class ResetPasswordService {
     @inject("UsersRepository")
     private usersRepository: IUsersRepository,
 
-    @inject("UserTokenRepository")
-    private userTokenRepository: IUserTokenRepository,
+    @inject("UserTokensRepository")
+    private userTokensRepository: IUserTokensRepository,
 
     @inject("HashProvider")
     private hashProvider: IHashProvider
   ) {}
 
   async execute({ token, password }: IRequest): Promise<void> {
-    const userToken = await this.userTokenRepository.findByToken(token);
+    const userToken = await this.userTokensRepository.findByToken(token);
 
     if (!userToken) {
-      throw new AppError("User token does not exists.");
+      throw new AppError("User token does not exists");
     }
 
     const user = await this.usersRepository.findById(userToken.user_id);
 
     if (!user) {
-      throw new AppError("User does not exists.");
+      throw new AppError("User does not exists");
     }
 
-    const tokenCreatedAt = userToken.created_at;
-    const compareDate = addHours(tokenCreatedAt, 2);
+    const tokenCraetedAt = userToken.created_at;
+    const compareDate = addHours(tokenCraetedAt, 2);
 
     if (isAfter(Date.now(), compareDate)) {
-      throw new AppError("Token expired.");
+      throw new AppError("Token expired");
     }
 
     user.password = await this.hashProvider.generateHash(password);

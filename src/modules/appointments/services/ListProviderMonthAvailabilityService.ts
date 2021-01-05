@@ -1,7 +1,7 @@
-import "reflect-metadata";
 import { injectable, inject } from "tsyringe";
-import { getDate, getDaysInMonth, isAfter } from "date-fns";
-import IAppointmentsRepository from "../repositories/IAppointmentsRepository";
+import { getDaysInMonth, getDate, isAfter } from "date-fns";
+
+import IAppointmentsRepository from "@modules/appointments/repositories/IAppointmentsRepository";
 
 interface IRequest {
   provider_id: string;
@@ -15,7 +15,7 @@ type IResponse = Array<{
 }>;
 
 @injectable()
-export default class ListProviderMonthAvailabilityService {
+class ListProviderMonthAvailabilityService {
   constructor(
     @inject("AppointmentsRepository")
     private appointmentsRepository: IAppointmentsRepository
@@ -23,14 +23,14 @@ export default class ListProviderMonthAvailabilityService {
 
   public async execute({
     provider_id,
-    year,
     month,
+    year,
   }: IRequest): Promise<IResponse> {
     const appointments = await this.appointmentsRepository.findAllInMonthFromProvider(
       {
         provider_id,
-        year,
         month,
+        year,
       }
     );
 
@@ -58,3 +58,5 @@ export default class ListProviderMonthAvailabilityService {
     return availability;
   }
 }
+
+export default ListProviderMonthAvailabilityService;

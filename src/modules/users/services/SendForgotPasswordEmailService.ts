@@ -1,16 +1,17 @@
-import { inject, injectable } from "tsyringe";
+import { injectable, inject } from "tsyringe";
 import path from "path";
+
 import AppError from "@shared/errors/AppError";
-import IUsersRepository from "../repositories/IUsersRepository";
+import IUsersRepository from "@modules/users/repositories/IUsersRepository";
 import IMailProvider from "@shared/container/providers/MailProvider/models/IMailProvider";
-import IUserTokenRepository from "../repositories/IUserTokenRepository";
+import IUserTokensRepository from "@modules/users/repositories/IUserTokenRepository";
 
 interface IRequest {
   email: string;
 }
 
 @injectable()
-class SendForgotPasswordEmailService {
+class SendForgotPasswordEmailSercice {
   constructor(
     @inject("UsersRepository")
     private usersRepository: IUsersRepository,
@@ -18,20 +19,20 @@ class SendForgotPasswordEmailService {
     @inject("MailProvider")
     private mailProvider: IMailProvider,
 
-    @inject("UserTokenRepository")
-    private userTokenRepository: IUserTokenRepository
+    @inject("UserTokensRepository")
+    private userTokensRepository: IUserTokensRepository
   ) {}
 
-  public async execute({ email }: IRequest): Promise<void> {
+  async execute({ email }: IRequest): Promise<void> {
     const user = await this.usersRepository.findByEmail(email);
 
     if (!user) {
       throw new AppError("User does not exists");
     }
 
-    const { token } = await this.userTokenRepository.generate(user.id);
+    const { token } = await this.userTokensRepository.generate(user.id);
 
-    const forgotPasswordTemplate = path.resolve(
+    const forgotPasswordTempalte = path.resolve(
       __dirname,
       "..",
       "views",
@@ -43,9 +44,9 @@ class SendForgotPasswordEmailService {
         name: user.name,
         email: user.email,
       },
-      subject: "[ GoBarber ] Recuperação de senha",
+      subject: "[GoBarber] Recuperação de senha",
       templateData: {
-        file: forgotPasswordTemplate,
+        file: forgotPasswordTempalte,
         variables: {
           name: user.name,
           link: `${process.env.APP_WEB_URL}/reset-password?token=${token}`,
@@ -55,4 +56,4 @@ class SendForgotPasswordEmailService {
   }
 }
 
-export default SendForgotPasswordEmailService;
+export default SendForgotPasswordEmailSercice;

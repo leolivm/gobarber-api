@@ -1,18 +1,23 @@
-import FakeUsersRepository from "../repositories/fakes/FakeUsersRepository";
-import FakeHashProvider from "../providers/HashProvider/fakes/FakeHashProvider";
-import AuthUserService from "./AuthUserService";
 import AppError from "@shared/errors/AppError";
+
+import FakeUsersRepository from "@modules/users/repositories/fakes/FakeUsersRepository";
+import FakeHashProvider from "@modules/users/providers/HashProvider/fakes/FakeHashProvider";
+
+import AuthenticateUserService from "./AuthUserService";
 
 let fakeUsersRepository: FakeUsersRepository;
 let fakeHashProvider: FakeHashProvider;
-let authUser: AuthUserService;
+let authenticateUser: AuthenticateUserService;
 
-describe("AuthUser", () => {
+describe("AuthentiacteUser", () => {
   beforeEach(() => {
     fakeUsersRepository = new FakeUsersRepository();
     fakeHashProvider = new FakeHashProvider();
 
-    authUser = new AuthUserService(fakeUsersRepository, fakeHashProvider);
+    authenticateUser = new AuthenticateUserService(
+      fakeUsersRepository,
+      fakeHashProvider
+    );
   });
 
   it("should be able to authenticate", async () => {
@@ -22,7 +27,7 @@ describe("AuthUser", () => {
       password: "123456",
     });
 
-    const response = await authUser.execute({
+    const response = await authenticateUser.execute({
       email: "johndoe@example.com",
       password: "123456",
     });
@@ -33,7 +38,7 @@ describe("AuthUser", () => {
 
   it("should not be able to authenticate with non existing user", async () => {
     await expect(
-      authUser.execute({
+      authenticateUser.execute({
         email: "johndoe@example.com",
         password: "123456",
       })
@@ -48,7 +53,7 @@ describe("AuthUser", () => {
     });
 
     await expect(
-      authUser.execute({
+      authenticateUser.execute({
         email: "johndoe@example.com",
         password: "wrong-password",
       })
